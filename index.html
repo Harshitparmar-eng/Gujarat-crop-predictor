@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Gujarat Smart Crop Yield Predictor</title>
+<style>
+body{
+font-family: Arial;
+background:#e8f5e9;
+padding:20px;
+}
+.container{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 0 10px grey;
+max-width:500px;
+margin:auto;
+}
+input, select{
+width:100%;
+padding:8px;
+margin:6px 0;
+}
+button{
+background:green;
+color:white;
+padding:10px;
+border:none;
+width:100%;
+font-size:16px;
+}
+.result{
+margin-top:20px;
+background:#f1f8e9;
+padding:15px;
+border-radius:8px;
+}
+h2{
+text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>🌾 Gujarat Smart Crop Yield Predictor</h2>
+
+<label>Select District</label>
+<select id="district">
+<option>Ahmedabad</option>
+<option>Surat</option>
+<option>Rajkot</option>
+<option>Bhavnagar</option>
+<option>Vadodara</option>
+<option>Kutch</option>
+<option>Junagadh</option>
+</select>
+
+<label>Select Crop</label>
+<select id="crop">
+<option>Wheat</option>
+<option>Rice</option>
+<option>Cotton</option>
+<option>Groundnut</option>
+<option>Bajra</option>
+<option>Maize</option>
+<option>Sugarcane</option>
+<option>Onion</option>
+<option>Potato</option>
+<option>Mango</option>
+</select>
+
+<label>Farm Area (hectare)</label>
+<input type="number" id="area">
+
+<label>Soil pH</label>
+<input type="number" id="ph" step="0.1">
+
+<label>Irrigation Type</label>
+<select id="irrigation">
+<option>Drip</option>
+<option>Sprinkler</option>
+<option>Flood</option>
+</select>
+
+<button onclick="predict()">Predict</button>
+
+<div class="result" id="output"></div>
+</div>
+
+<script>
+
+// Crop base data (approx Gujarat values)
+let crops = {
+Wheat:{yield:3000,price:22},
+Rice:{yield:3500,price:20},
+Cotton:{yield:1500,price:60},
+Groundnut:{yield:2000,price:55},
+Bajra:{yield:1800,price:25},
+Maize:{yield:2500,price:18},
+Sugarcane:{yield:40000,price:3},
+Onion:{yield:20000,price:15},
+Potato:{yield:25000,price:12},
+Mango:{yield:10000,price:30}
+};
+
+// District weather (approx averages)
+let districts = {
+Ahmedabad:{rain:700,temp:32},
+Surat:{rain:1200,temp:30},
+Rajkot:{rain:600,temp:33},
+Bhavnagar:{rain:650,temp:32},
+Vadodara:{rain:900,temp:31},
+Kutch:{rain:400,temp:35},
+Junagadh:{rain:800,temp:30}
+};
+
+function predict(){
+
+let district=document.getElementById("district").value;
+let crop=document.getElementById("crop").value;
+let area=parseFloat(document.getElementById("area").value);
+let ph=parseFloat(document.getElementById("ph").value);
+let irrigation=document.getElementById("irrigation").value;
+
+if(!area || !ph){
+alert("Please fill all fields");
+return;
+}
+
+let baseYield=crops[crop].yield;
+let price=crops[crop].price;
+let rain=districts[district].rain;
+let temp=districts[district].temp;
+
+// Adjust yield based on rainfall
+let rainFactor = rain/800;
+
+// Adjust yield based on pH (ideal 6-7)
+let phFactor = (ph>=6 && ph<=7)?1:0.8;
+
+// Irrigation boost
+let irrigationFactor = irrigation=="Drip"?1.1:
+irrigation=="Sprinkler"?1.05:1;
+
+let finalYieldPerHectare = baseYield * rainFactor * phFactor * irrigationFactor;
+let totalYield = finalYieldPerHectare * area;
+let profit = totalYield * price;
+
+let successRate = Math.min(95, (rainFactor*phFactor*100)).toFixed(0);
+
+let risk = rain<500?"High (Low Rainfall)":
+rain<700?"Medium":"Low";
+
+let alternative = rain<500?"Bajra / Castor":
+rain>1000?"Rice / Sugarcane":
+"Groundnut / Cotton";
+
+document.getElementById("output").innerHTML=
+"<b>Predicted Yield per hectare:</b> "+finalYieldPerHectare.toFixed(0)+" kg<br><br>"+
+"<b>Total Yield:</b> "+totalYield.toFixed(0)+" kg<br><br>"+
+"<b>Estimated Profit:</b> ₹"+profit.toFixed(0)+"<br><br>"+
+"<b>Success Rate:</b> "+successRate+"%<br><br>"+
+"<b>Risk Level:</b> "+risk+"<br><br>"+
+"<b>Suggested Alternative Crops:</b> "+alternative;
+
+}
+
+</script>
+
+</body>
+</html>
